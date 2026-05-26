@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% from '_signature_widget.html' import signature_pad %}
+{% block title %}Payment Intake Form{% endblock %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@5.0.0/dist/signature_pad.umd.min.js"></script>
+
+<form method="POST" id="intake-form" novalidate>
+  {{ form.hidden_tag() }}
+
+  <!-- ── WORKER INFORMATION ── -->
+  <fieldset>
+    <legend>Worker Information</legend>
+
+    <div class="form-group {% if form.worker_name.errors %}has-error{% endif %}">
+      {{ form.worker_name.label }}
+      {{ form.worker_name() }}
+      {% for e in form.worker_name.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+    </div>
+
+    <div class="form-group {% if form.worker_contact.errors %}has-error{% endif %}">
+      {{ form.worker_contact.label }}
+      {{ form.worker_contact() }}
+      {% for e in form.worker_contact.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+    </div>
+  </fieldset>
+
+  <!-- ── JOB DETAILS ── -->
+  <fieldset>
+    <legend>Job Details</legend>
+
+    <div class="form-group {% if form.job_description.errors %}has-error{% endif %}">
+      {{ form.job_description.label }}
+      {{ form.job_description() }}
+      {% for e in form.job_description.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+    </div>
+
+    <div class="form-group {% if form.work_date.errors %}has-error{% endif %}">
+      {{ form.work_date.label }}
+      {{ form.work_date() }}
+      {% for e in form.work_date.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+    </div>
+  </fieldset>
+
+  <!-- ── PAYMENT DETAILS ── -->
+  <fieldset>
+    <legend>Payment Details</legend>
+
+    <div class="form-row">
+      <div class="form-group {% if form.hours_worked.errors %}has-error{% endif %}">
+        {{ form.hours_worked.label }}
+        {{ form.hours_worked() }}
+        {% for e in form.hours_worked.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+      </div>
+      <div class="form-group {% if form.hourly_rate.errors %}has-error{% endif %}">
+        {{ form.hourly_rate.label }}
+        {{ form.hourly_rate() }}
+        {% for e in form.hourly_rate.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+      </div>
+    </div>
+
+    <div class="form-group {% if form.total_payment.errors %}has-error{% endif %}">
+      {{ form.total_payment.label }}
+      {{ form.total_payment() }}
+      {% for e in form.total_payment.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+    </div>
+  </fieldset>
+
+  <!-- ── AUTHORISATION ── -->
+  <fieldset>
+    <legend>Authorisation</legend>
+
+    <div class="form-group {% if form.supervisor_name.errors %}has-error{% endif %}">
+      {{ form.supervisor_name.label }}
+      {{ form.supervisor_name() }}
+      {% for e in form.supervisor_name.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+    </div>
+  </fieldset>
+
+  <!-- ── SIGNATURE ── -->
+  <fieldset class="sig-fieldset">
+    <legend>Signature <span class="sig-required">*</span></legend>
+    {{ signature_pad('signature_data', 'Authorised Signature') }}
+    {{ form.signature_data() }}
+    {% for e in form.signature_data.errors %}
+      <span class="error-msg">{{ e }}</span>
+    {% endfor %}
+  </fieldset>
+
+  <button type="submit" class="btn-submit">Submit Payment Record</button>
+</form>
+
+<script>
+  document.getElementById('intake-form').addEventListener('submit', function (e) {
+    if (!window.collectAllSignatures()) {
+      e.preventDefault();
+    }
+  });
+</script>
+{% endblock %}

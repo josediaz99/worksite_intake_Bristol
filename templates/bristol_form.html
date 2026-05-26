@@ -1,0 +1,452 @@
+{% extends "base.html" %}
+{% from '_signature_widget.html' import signature_pad %}
+{% block title %}Bristol Service Call Report{% endblock %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@5.0.0/dist/signature_pad.umd.min.js"></script>
+
+<form method="POST" id="bristol-form" novalidate>
+  {{ form.hidden_tag() }}
+
+  <!-- ── JOB INFORMATION ── -->
+  <fieldset>
+    <legend>Job Information</legend>
+
+    <div class="form-row">
+      <div class="form-group {% if form.date.errors %}has-error{% endif %}">
+        {{ form.date.label }}
+        {{ form.date() }}
+        {% for e in form.date.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+      </div>
+      <div class="form-group {% if form.purchase_order.errors %}has-error{% endif %}">
+        {{ form.purchase_order.label }}
+        {{ form.purchase_order() }}
+        {% for e in form.purchase_order.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+      </div>
+    </div>
+
+    <div class="form-group {% if form.name.errors %}has-error{% endif %}">
+      {{ form.name.label }}
+      {{ form.name() }}
+      {% for e in form.name.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+    </div>
+
+    <div class="form-row">
+      <div class="form-group {% if form.site_contact.errors %}has-error{% endif %}">
+        {{ form.site_contact.label }}
+        {{ form.site_contact() }}
+        {% for e in form.site_contact.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+      </div>
+      <div class="form-group {% if form.contact_ph.errors %}has-error{% endif %}">
+        {{ form.contact_ph.label }}
+        {{ form.contact_ph() }}
+        {% for e in form.contact_ph.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+      </div>
+    </div>
+
+    <div class="form-group {% if form.site_address.errors %}has-error{% endif %}">
+      {{ form.site_address.label }}
+      {{ form.site_address() }}
+      {% for e in form.site_address.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+    </div>
+
+    <div class="form-row form-row-3">
+      <div class="form-group {% if form.city.errors %}has-error{% endif %}">
+        {{ form.city.label }}
+        {{ form.city() }}
+        {% for e in form.city.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+      </div>
+      <div class="form-group {% if form.state.errors %}has-error{% endif %}">
+        {{ form.state.label }}
+        {{ form.state() }}
+        {% for e in form.state.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+      </div>
+      <div class="form-group {% if form.zip.errors %}has-error{% endif %}">
+        {{ form.zip.label }}
+        {{ form.zip() }}
+        {% for e in form.zip.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+      </div>
+    </div>
+  </fieldset>
+
+  <!-- ── MACHINE INFORMATION ── -->
+  <fieldset>
+    <legend>Machine Information</legend>
+    <div class="form-row">
+      <div class="form-group {% if form.machine_type.errors %}has-error{% endif %}">
+        {{ form.machine_type.label }}
+        {{ form.machine_type(placeholder="e.g. Hydraulic Hose") }}
+        {% for e in form.machine_type.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+      </div>
+      <div class="form-group {% if form.unit_number.errors %}has-error{% endif %}">
+        {{ form.unit_number.label }}
+        {{ form.unit_number() }}
+        {% for e in form.unit_number.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group {% if form.serial_number.errors %}has-error{% endif %}">
+        {{ form.serial_number.label }}
+        {{ form.serial_number() }}
+        {% for e in form.serial_number.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+      </div>
+      <div class="form-group {% if form.machine_hrs.errors %}has-error{% endif %}">
+        {{ form.machine_hrs.label }}
+        {{ form.machine_hrs() }}
+        {% for e in form.machine_hrs.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+      </div>
+    </div>
+  </fieldset>
+
+  <!-- ── SERVICE DETAILS ── -->
+  <fieldset>
+    <legend>Service Details</legend>
+    <div class="form-group {% if form.technician.errors %}has-error{% endif %}">
+      {{ form.technician.label }}
+      {{ form.technician() }}
+      {% for e in form.technician.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+    </div>
+    <div class="form-group {% if form.tech_notes.errors %}has-error{% endif %}">
+      {{ form.tech_notes.label }}
+      {{ form.tech_notes() }}
+      {% for e in form.tech_notes.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+    </div>
+  </fieldset>
+
+  <!-- ── PARTS & MATERIALS ── -->
+  <fieldset>
+    <legend>Parts &amp; Materials</legend>
+
+    {# Hidden inputs always present so form data is preserved on submit #}
+    {% for i in range(5) %}
+      {{ form['qty_'  ~ i](style="display:none") }}
+      {{ form['part_' ~ i](style="display:none") }}
+      {{ form['desc_' ~ i](style="display:none") }}
+      {{ form['unit_' ~ i](style="display:none") }}
+      {{ form['ext_'  ~ i](style="display:none") }}
+    {% endfor %}
+
+    <div id="parts-list"></div>
+
+    <button type="button" id="add-part-btn" class="btn-add-part">+ Add Part</button>
+  </fieldset>
+
+  <!-- ── TIME & TRAVEL ── -->
+  <fieldset>
+    <legend>Time &amp; Travel</legend>
+    <div class="form-row form-row-4">
+      <div class="form-group {% if form.drive_to.errors %}has-error{% endif %}">
+        {{ form.drive_to.label }}
+        {{ form.drive_to() }}
+        {% for e in form.drive_to.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+      </div>
+      <div class="form-group {% if form.drive_from.errors %}has-error{% endif %}">
+        {{ form.drive_from.label }}
+        {{ form.drive_from() }}
+        {% for e in form.drive_from.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+      </div>
+      <div class="form-group {% if form.site_in.errors %}has-error{% endif %}">
+        {{ form.site_in.label }}
+        {{ form.site_in() }}
+        {% for e in form.site_in.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+      </div>
+      <div class="form-group {% if form.site_out.errors %}has-error{% endif %}">
+        {{ form.site_out.label }}
+        {{ form.site_out() }}
+        {% for e in form.site_out.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+      </div>
+    </div>
+    <div class="form-group {% if form.equipment_ok.errors %}has-error{% endif %}">
+      {{ form.equipment_ok.label }}
+      {{ form.equipment_ok() }}
+      {% for e in form.equipment_ok.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+    </div>
+  </fieldset>
+
+  <!-- ── TOTALS ── -->
+  <fieldset>
+    <legend>Totals</legend>
+    <div class="form-row form-row-3">
+      <div class="form-group {% if form.subtotal.errors %}has-error{% endif %}">
+        {{ form.subtotal.label }}
+        {{ form.subtotal() }}
+        {% for e in form.subtotal.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+      </div>
+      <div class="form-group {% if form.tax.errors %}has-error{% endif %}">
+        {{ form.tax.label }}
+        {{ form.tax() }}
+        {% for e in form.tax.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+      </div>
+      <div class="form-group {% if form.total.errors %}has-error{% endif %}">
+        {{ form.total.label }}
+        {{ form.total() }}
+        {% for e in form.total.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+      </div>
+    </div>
+  </fieldset>
+
+  <!-- ── PAYMENT INFORMATION ── -->
+  <fieldset>
+    <legend>Payment Information</legend>
+    <div class="form-row">
+      <div class="form-group {% if form.cc_number.errors %}has-error{% endif %}">
+        {{ form.cc_number.label }}
+        {{ form.cc_number() }}
+        {% for e in form.cc_number.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+      </div>
+      <div class="form-group {% if form.cc_expiry.errors %}has-error{% endif %}">
+        {{ form.cc_expiry.label }}
+        {{ form.cc_expiry() }}
+        {% for e in form.cc_expiry.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group {% if form.cc_cvv.errors %}has-error{% endif %}">
+        {{ form.cc_cvv.label }}
+        {{ form.cc_cvv() }}
+        {% for e in form.cc_cvv.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+      </div>
+      <div class="form-group {% if form.billing_zip.errors %}has-error{% endif %}">
+        {{ form.billing_zip.label }}
+        {{ form.billing_zip() }}
+        {% for e in form.billing_zip.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+      </div>
+    </div>
+  </fieldset>
+
+  <!-- ── CUSTOMER SIGNATURE ── -->
+  <fieldset class="sig-fieldset">
+    <legend>Customer Signature <span class="sig-required">*</span></legend>
+    {{ signature_pad('cust_sig_data', 'Sign below') }}
+    {{ form.cust_sig_data() }}
+    {% for e in form.cust_sig_data.errors %}
+      <span class="error-msg">{{ e }}</span>
+    {% endfor %}
+    <div class="form-group" style="margin-top:0.75rem">
+      {{ form.cust_name_print.label }}
+      {{ form.cust_name_print() }}
+      {% for e in form.cust_name_print.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+    </div>
+  </fieldset>
+
+  <!-- ── HOSE DOCTOR SIGN-OFF ── -->
+  <fieldset class="sig-fieldset">
+    <legend>Hose Doctor Sign-off <span class="sig-required">*</span></legend>
+    {{ signature_pad('hd_sig_data', 'Sign below') }}
+    {{ form.hd_sig_data() }}
+    {% for e in form.hd_sig_data.errors %}
+      <span class="error-msg">{{ e }}</span>
+    {% endfor %}
+    <div class="form-group" style="margin-top:0.75rem">
+      {{ form.hd_date.label }}
+      {{ form.hd_date(**{'data-allow-future': 'true'}) }}
+      {% for e in form.hd_date.errors %}<span class="error-msg">{{ e }}</span>{% endfor %}
+    </div>
+  </fieldset>
+
+  <button type="submit" class="btn-submit">Submit Service Report</button>
+</form>
+
+<script>
+/* ── Parts & Materials — dynamic add / collapse ─────────────────────────── */
+(function () {
+  const MAX_PARTS = 5;
+  const active = new Set();   // indices of currently shown rows
+  const list   = document.getElementById('parts-list');
+  const addBtn = document.getElementById('add-part-btn');
+
+  /* Read the value of a hidden WTForms input by field name */
+  function fv(name) {
+    const el = document.querySelector(`[name="${name}"]`);
+    return el ? el.value.trim() : '';
+  }
+  function setFv(name, val) {
+    const el = document.querySelector(`[name="${name}"]`);
+    if (el) el.value = val;
+  }
+
+  /* Build the DOM for one part entry (index i) */
+  function buildEntry(i) {
+    const n    = i + 1;
+    const div  = document.createElement('div');
+    div.className = 'part-entry';
+    div.id = `part-entry-${i}`;
+    div.innerHTML = `
+      <!-- Expanded editing card -->
+      <div class="part-editing" id="part-editing-${i}">
+        <div class="part-editing-header">
+          <span class="part-editing-title">Part ${n}</span>
+          <button type="button" class="btn-part-done" onclick="partDone(${i})">Done</button>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Quantity</label>
+            <input type="text" class="part-field" id="pf-qty-${i}"
+                   inputmode="numeric" placeholder="e.g. 2"
+                   oninput="syncHidden(${i})">
+          </div>
+          <div class="form-group">
+            <label>Part Number</label>
+            <input type="text" class="part-field" id="pf-part-${i}"
+                   placeholder="e.g. HB-1234"
+                   oninput="syncHidden(${i})">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Description</label>
+          <input type="text" class="part-field" id="pf-desc-${i}"
+                 placeholder='e.g. Hydraulic hose assembly 2" x 36"'
+                 oninput="syncHidden(${i})">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Unit Price ($)</label>
+            <input type="text" class="part-field" id="pf-unit-${i}"
+                   inputmode="decimal" placeholder="0.00"
+                   oninput="syncHidden(${i})">
+          </div>
+          <div class="form-group">
+            <label>Extended Price ($)</label>
+            <input type="text" class="part-field" id="pf-ext-${i}"
+                   inputmode="decimal" placeholder="0.00"
+                   oninput="syncHidden(${i})">
+          </div>
+        </div>
+
+        <button type="button" class="btn-part-remove" onclick="partRemove(${i})">
+          Remove this part
+        </button>
+      </div>
+
+      <!-- Collapsed summary pill -->
+      <div class="part-summary" id="part-summary-${i}" style="display:none">
+        <div class="part-summary-row">
+          <div class="part-summary-info">
+            <span class="psm-qty"  id="psm-qty-${i}">1</span>
+            <span class="psm-x">&times;</span>
+            <span class="psm-part" id="psm-part-${i}">—</span>
+            <span class="psm-unit" id="psm-unit-${i}">$0.00</span>
+            <span class="psm-sep">|</span>
+            <span class="psm-ext"  id="psm-ext-${i}">$0.00</span>
+          </div>
+          <div class="part-summary-actions">
+            <button type="button" class="btn-part-edit" onclick="partEdit(${i})">Edit</button>
+            <button type="button" class="btn-part-x"   onclick="partRemove(${i})">&#x2715;</button>
+          </div>
+        </div>
+        <p class="psm-desc" id="psm-desc-${i}" style="display:none"></p>
+      </div>`;
+    return div;
+  }
+
+  /* Sync visible inputs → hidden WTForms fields on every keystroke */
+  window.syncHidden = function (i) {
+    setFv(`qty_${i}`,  document.getElementById(`pf-qty-${i}`).value);
+    setFv(`part_${i}`, document.getElementById(`pf-part-${i}`).value);
+    setFv(`desc_${i}`, document.getElementById(`pf-desc-${i}`).value);
+    setFv(`unit_${i}`, document.getElementById(`pf-unit-${i}`).value);
+    setFv(`ext_${i}`,  document.getElementById(`pf-ext-${i}`).value);
+  };
+
+  /* Collapse to summary pill */
+  window.partDone = function (i) {
+    syncHidden(i);
+    const qty  = document.getElementById(`pf-qty-${i}`).value.trim()  || '—';
+    const part = document.getElementById(`pf-part-${i}`).value.trim() || '—';
+    const unit = document.getElementById(`pf-unit-${i}`).value.trim();
+    const ext  = document.getElementById(`pf-ext-${i}`).value.trim();
+    const desc = document.getElementById(`pf-desc-${i}`).value.trim();
+
+    document.getElementById(`psm-qty-${i}`).textContent  = qty;
+    document.getElementById(`psm-part-${i}`).textContent = part;
+    document.getElementById(`psm-unit-${i}`).textContent = unit ? '$' + unit : '$0.00';
+    document.getElementById(`psm-ext-${i}`).textContent  = ext  ? '$' + ext  : '$0.00';
+
+    const descEl = document.getElementById(`psm-desc-${i}`);
+    if (desc) { descEl.textContent = desc; descEl.style.display = 'block'; }
+    else       { descEl.style.display = 'none'; }
+
+    document.getElementById(`part-editing-${i}`).style.display = 'none';
+    document.getElementById(`part-summary-${i}`).style.display = 'flex';
+  };
+
+  /* Re-expand for editing */
+  window.partEdit = function (i) {
+    document.getElementById(`part-summary-${i}`).style.display = 'none';
+    document.getElementById(`part-editing-${i}`).style.display = 'block';
+    document.getElementById(`pf-qty-${i}`).focus();
+  };
+
+  /* Remove a part row */
+  window.partRemove = function (i) {
+    ['qty_','part_','desc_','unit_','ext_'].forEach(p => setFv(p + i, ''));
+    ['pf-qty-','pf-part-','pf-desc-','pf-unit-','pf-ext-'].forEach(p => {
+      const el = document.getElementById(p + i);
+      if (el) el.value = '';
+    });
+    const entry = document.getElementById(`part-entry-${i}`);
+    entry.classList.add('part-removing');
+    setTimeout(() => { entry.remove(); active.delete(i); syncAddBtn(); }, 220);
+  };
+
+  /* Show the next available part slot */
+  function addPart() {
+    if (active.size >= MAX_PARTS) return;
+    let slot = -1;
+    for (let i = 0; i < MAX_PARTS; i++) {
+      if (!active.has(i)) { slot = i; break; }
+    }
+    if (slot < 0) return;
+
+    active.add(slot);
+    const entry = buildEntry(slot);
+    list.appendChild(entry);
+    syncAddBtn();
+
+    /* Scroll to new row then focus the Qty input */
+    requestAnimationFrame(() => {
+      entry.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      setTimeout(() => document.getElementById(`pf-qty-${slot}`).focus(), 300);
+    });
+  }
+
+  function syncAddBtn() {
+    if (active.size >= MAX_PARTS) {
+      addBtn.textContent = 'Maximum 5 parts reached';
+      addBtn.disabled = true;
+    } else {
+      addBtn.textContent = '+ Add Part';
+      addBtn.disabled = false;
+    }
+  }
+
+  /* Restore any rows that already have data (after a failed form resubmission) */
+  for (let i = 0; i < MAX_PARTS; i++) {
+    if (fv(`qty_${i}`) || fv(`part_${i}`) || fv(`desc_${i}`)) {
+      active.add(i);
+      const entry = buildEntry(i);
+      list.appendChild(entry);
+      /* Pre-fill visible inputs from hidden WTForms fields */
+      document.getElementById(`pf-qty-${i}`).value  = fv(`qty_${i}`);
+      document.getElementById(`pf-part-${i}`).value = fv(`part_${i}`);
+      document.getElementById(`pf-desc-${i}`).value = fv(`desc_${i}`);
+      document.getElementById(`pf-unit-${i}`).value = fv(`unit_${i}`);
+      document.getElementById(`pf-ext-${i}`).value  = fv(`ext_${i}`);
+    }
+  }
+  syncAddBtn();
+
+  addBtn.addEventListener('click', addPart);
+})();
+
+/* ── Form submit: capture signatures ────────────────────────────────────── */
+document.getElementById('bristol-form').addEventListener('submit', function (e) {
+  if (!window.collectAllSignatures()) {
+    e.preventDefault();
+  }
+});
+</script>
+{% endblock %}

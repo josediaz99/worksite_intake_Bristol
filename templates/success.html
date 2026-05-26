@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Report Submitted{% endblock %}
+
+{% block content %}
+<div class="success-box">
+  <h2>Report Submitted</h2>
+  <p>The service call report has been sent for processing.</p>
+  <p>You can close this page or <a href="{{ url_for('service_report') }}">submit another report</a>.</p>
+</div>
+{% endblock %}

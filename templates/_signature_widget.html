@@ -1,0 +1,182 @@
+{#
+  Macro: signature_pad(field_name, label)
+
+  Renders a signature capture widget (draw OR type modes) with a 280 px canvas.
+  Works correctly for mobile touch input.
+
+  Prerequisites (must be in the page before this macro is called):
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@5.0.0/dist/signature_pad.umd.min.js"></script>
+
+  On form submit, call:
+    window.collectAllSignatures()  → returns true if every pad is signed, false otherwise.
+  It populates the hidden field whose id matches field_name automatically.
+#}
+{% macro signature_pad(field_name, label='Signature') %}
+<div class="sig-section" id="{{ field_name }}_section">
+  <p class="sig-section-label">{{ label }}</p>
+
+  <!-- Draw mode -->
+  <div id="{{ field_name }}_draw">
+    <div class="sig-container">
+      <canvas id="{{ field_name }}_canvas" class="sig-canvas"></canvas>
+    </div>
+    <div class="sig-controls">
+      <button type="button" class="btn-clear"
+              onclick="sigClear({{ field_name|tojson }})">Clear</button>
+      <button type="button" class="sig-mode-toggle"
+              onclick="sigToType({{ field_name|tojson }})">✏️ Type name instead</button>
+    </div>
+    <p class="sig-hint">Sign with your finger or mouse</p>
+  </div>
+
+  <!-- Type mode -->
+  <div id="{{ field_name }}_type" style="display:none">
+    <div class="form-group">
+      <label for="{{ field_name }}_text">Type your full name</label>
+      <input type="text" id="{{ field_name }}_text"
+             placeholder="Full name" autocomplete="name" maxlength="80">
+    </div>
+    <div class="sig-preview-container">
+      <p class="sig-hint">Signature preview:</p>
+      <canvas id="{{ field_name }}_preview" class="sig-preview"></canvas>
+    </div>
+    <button type="button" class="sig-mode-toggle"
+            onclick="sigToDraw({{ field_name|tojson }})">✍️ Draw instead</button>
+  </div>
+
+  <span id="{{ field_name }}_sig_err" class="error-msg"></span>
+</div>
+
+<script>
+(function () {
+  /* ── One-time global helpers (idempotent across multiple macro calls) ── */
+  if (!window._sigRegistry) {
+    window._sigRegistry = {};
+
+    window.sigClear = function (f) {
+      var r = window._sigRegistry[f];
+      if (r) r.pad.clear();
+    };
+
+    window.sigToType = function (f) {
+      document.getElementById(f + '_draw').style.display = 'none';
+      document.getElementById(f + '_type').style.display = 'block';
+      _resizeSigCanvas(document.getElementById(f + '_preview'));
+      _renderSigPreview(f);
+    };
+
+    window.sigToDraw = function (f) {
+      document.getElementById(f + '_type').style.display = 'none';
+      document.getElementById(f + '_draw').style.display = 'block';
+      var r = window._sigRegistry[f];
+      if (r) r.initCanvas();
+    };
+
+    window._resizeSigCanvas = function (canvas) {
+      var ratio = Math.max(window.devicePixelRatio || 1, 1);
+      var rect  = canvas.getBoundingClientRect();
+      if (!rect.width) return;
+      canvas.width  = rect.width  * ratio;
+      canvas.height = rect.height * ratio;
+      canvas.getContext('2d').scale(ratio, ratio);
+    };
+
+    window._renderSigPreview = function (f) {
+      var r = window._sigRegistry[f];
+      if (!r) return;
+      var name   = r.typedInput.value.trim();
+      var canvas = document.getElementById(f + '_preview');
+      var ctx    = canvas.getContext('2d');
+      var ratio  = Math.max(window.devicePixelRatio || 1, 1);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      if (name) {
+        var fontSize = Math.min(40, (canvas.width / ratio) / (name.length * 0.55));
+        ctx.font      = 'italic ' + fontSize + 'px Georgia, serif';
+        ctx.fillStyle = '#000';
+        ctx.fillText(name, 16, (canvas.height / ratio) * 0.65);
+      }
+    };
+
+    /*
+     * Capture every registered pad into its hidden field.
+     * Returns true when all pads have a valid signature, false otherwise.
+     * Call this in the form submit handler before allowing submission.
+     */
+    window.collectAllSignatures = function () {
+      var allValid = true;
+      for (var fieldName in window._sigRegistry) {
+        var r    = window._sigRegistry[fieldName];
+        var data = r.capture();
+        var err  = document.getElementById(fieldName + '_sig_err');
+        if (!data) {
+          if (err) err.textContent = 'Please provide this signature.';
+          if (allValid) {
+            document.getElementById(fieldName + '_section')
+              .scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+          allValid = false;
+        } else {
+          if (err) err.textContent = '';
+          var hidden = document.getElementById(fieldName);
+          if (hidden) hidden.value = data;
+        }
+      }
+      return allValid;
+    };
+  }
+
+  /* ── Per-widget registration ── */
+  var FIELD        = {{ field_name|tojson }};
+  var drawCanvas   = document.getElementById(FIELD + '_canvas');
+  var previewCanvas= document.getElementById(FIELD + '_preview');
+  var typedInput   = document.getElementById(FIELD + '_text');
+
+  drawCanvas.style.height    = '280px';
+  previewCanvas.style.height = '80px';
+
+  var pad = new SignaturePad(drawCanvas, {
+    minWidth:        1.5,
+    maxWidth:        3.5,
+    penColor:        '#000000',
+    backgroundColor: 'rgb(255,255,255)'
+  });
+
+  function initCanvas() {
+    _resizeSigCanvas(drawCanvas);
+    pad.clear();
+  }
+
+  function capture() {
+    var typeMode = document.getElementById(FIELD + '_type').style.display !== 'none';
+    if (typeMode) {
+      var name = typedInput.value.trim();
+      if (!name) return null;
+      /* Render typed name onto the draw canvas so toDataURL captures it */
+      initCanvas();
+      var ctx   = drawCanvas.getContext('2d');
+      var ratio = Math.max(window.devicePixelRatio || 1, 1);
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
+      var fontSize = Math.min(48, (drawCanvas.width / ratio) / (name.length * 0.55));
+      ctx.font      = 'italic ' + fontSize + 'px Georgia, serif';
+      ctx.fillStyle = '#000';
+      ctx.fillText(name, 20, (drawCanvas.height / ratio) * 0.6);
+    } else {
+      if (pad.isEmpty()) return null;
+    }
+    return drawCanvas.toDataURL('image/png');
+  }
+
+  typedInput.addEventListener('input', function () { _renderSigPreview(FIELD); });
+
+  window._sigRegistry[FIELD] = {
+    pad: pad, typedInput: typedInput, initCanvas: initCanvas, capture: capture
+  };
+
+  window.addEventListener('load',   initCanvas);
+  window.addEventListener('resize', initCanvas);
+})();
+</script>
+{% endmacro %}

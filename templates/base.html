@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <!-- CRITICAL for mobile signature canvas scaling -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>{% block title %}Bristol Service Call{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <img src="{{ url_for('static', filename='bristol_logo.png') }}"
+           alt="Bristol Hose"
+           class="brand-logo"
+           onerror="this.style.display='none'">
+      <h1>Bristol Service Call Report</h1>
+    </header>
+    <main>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+  <script>
+    /* Set max date to today on date inputs that should not allow future dates.
+       Use data-allow-future on any input that should be unrestricted (e.g. hd_date). */
+    document.addEventListener('DOMContentLoaded', function () {
+      var today = new Date().toISOString().split('T')[0];
+      document.querySelectorAll('input[type="date"]:not([data-allow-future])').forEach(function (el) {
+        el.max = today;
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,436 @@
+/* ── Reset & Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f4f4f4;
+  color: #222;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.container {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+/* ── Logo ── */
+.brand-logo {
+  display: block;
+  max-height: 72px;
+  max-width: 240px;
+  width: auto;
+  margin-bottom: 0.5rem;
+  object-fit: contain;
+}
+
+header h1 {
+  font-size: 1.4rem;
+  padding: 1rem 0;
+  border-bottom: 2px solid #1e3a5f;
+  margin-bottom: 1.5rem;
+  color: #1e3a5f;
+}
+
+/* ── Fieldsets ── */
+fieldset {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  background: #fff;
+}
+
+legend {
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #555;
+  padding: 0 0.5rem;
+}
+
+.legend-optional {
+  font-weight: 400;
+  text-transform: none;
+  font-size: 0.8rem;
+  color: #888;
+}
+
+/* ── Form Groups & Rows ── */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-row-3 {
+  grid-template-columns: 2fr 1fr 1fr;
+}
+
+.form-row-4 {
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+}
+
+@media (max-width: 540px) {
+  .form-row,
+  .form-row-3,
+  .form-row-4 { grid-template-columns: 1fr; }
+}
+
+.field-note {
+  font-size: 0.8rem;
+  color: #666;
+  margin-bottom: 0.75rem;
+}
+
+label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.35rem;
+  color: #333;
+}
+
+input, textarea, select {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+  background: #fff;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+}
+
+textarea { resize: vertical; }
+
+.has-error input,
+.has-error textarea,
+.has-error select {
+  border-color: #dc2626;
+}
+
+.error-msg {
+  display: block;
+  color: #dc2626;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
+
+/* ── Parts dynamic cards ── */
+#parts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+
+/* Editing card */
+.part-editing {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 1rem;
+  background: #fafafa;
+}
+
+.part-editing-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.part-editing-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #1e3a5f;
+}
+
+.btn-part-done {
+  padding: 0.35rem 0.85rem;
+  background: #1e3a5f;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  font-weight: 500;
+  min-height: 36px;
+}
+
+.btn-part-done:hover { background: #2a4f80; }
+
+.btn-part-remove {
+  margin-top: 0.75rem;
+  background: none;
+  border: none;
+  color: #dc2626;
+  font-size: 0.82rem;
+  cursor: pointer;
+  padding: 0.25rem 0;
+  text-decoration: underline;
+}
+
+/* Collapsed summary pill */
+.part-summary {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+  background: #fff;
+  gap: 0.25rem;
+}
+
+.part-summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.part-summary-info {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+  min-width: 0;
+}
+
+.psm-qty  { font-weight: 600; color: #1e3a5f; }
+.psm-x    { color: #9ca3af; font-size: 0.8rem; }
+.psm-part { font-weight: 500; color: #374151; }
+.psm-unit,
+.psm-ext  { color: #374151; font-size: 0.85rem; }
+.psm-sep  { color: #d1d5db; font-size: 0.75rem; }
+
+.psm-desc {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.part-summary-actions {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.btn-part-edit {
+  padding: 0.3rem 0.7rem;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 5px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  min-height: 34px;
+  color: #374151;
+}
+
+.btn-part-edit:hover { border-color: #1e3a5f; color: #1e3a5f; }
+
+.btn-part-x {
+  padding: 0.3rem 0.55rem;
+  background: #fff;
+  border: 1px solid #fca5a5;
+  border-radius: 5px;
+  font-size: 0.85rem;
+  color: #dc2626;
+  cursor: pointer;
+  min-height: 34px;
+  line-height: 1;
+}
+
+.btn-part-x:hover { background: #fee2e2; }
+
+/* Fade-out on remove */
+.part-removing {
+  opacity: 0;
+  transform: translateX(8px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* Add Part button */
+.btn-add-part {
+  display: block;
+  width: 100%;
+  padding: 0.75rem;
+  background: #fff;
+  border: 2px dashed #1e3a5f;
+  border-radius: 8px;
+  color: #1e3a5f;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.15s, color 0.15s;
+  margin-top: 0.25rem;
+}
+
+.btn-add-part:hover:not(:disabled) {
+  background: #1e3a5f;
+  color: #fff;
+}
+
+.btn-add-part:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-style: solid;
+}
+
+/* Mobile: stack form-row inside part cards */
+@media (max-width: 480px) {
+  .part-editing .form-row { grid-template-columns: 1fr; }
+  .part-summary-info { font-size: 0.85rem; }
+}
+
+/* ── CC Security Notice ── */
+.cc-notice {
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: 6px;
+  padding: 0.6rem 0.85rem;
+  font-size: 0.82rem;
+  color: #78350f;
+  margin-bottom: 1rem;
+}
+
+/* ── Signature Sections ── */
+.sig-fieldset {
+  border-color: #1e3a5f;
+}
+
+.sig-section {
+  margin-bottom: 0.5rem;
+}
+
+.sig-section-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.sig-required {
+  color: #dc2626;
+  font-style: normal;
+}
+
+.sig-container {
+  border: 2px dashed #1e3a5f;
+  border-radius: 8px;
+  background: #fafafa;
+  overflow: hidden;
+  touch-action: none;  /* prevents page scroll during signing on mobile */
+}
+
+/* The canvas fills the container; height is set by JS to 280px */
+.sig-canvas {
+  width: 100%;
+  display: block;
+  cursor: crosshair;
+}
+
+.sig-preview-container {
+  margin-top: 0.5rem;
+}
+
+.sig-preview {
+  width: 100%;
+  display: block;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.sig-controls {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.sig-mode-toggle {
+  font-size: 0.8rem;
+  color: #2563eb;
+  cursor: pointer;
+  background: none;
+  border: none;
+  text-decoration: underline;
+  padding: 0.25rem 0;
+}
+
+.sig-hint {
+  font-size: 0.78rem;
+  color: #888;
+  margin-top: 0.35rem;
+}
+
+/* ── Buttons ── */
+.btn-submit {
+  display: block;
+  width: 100%;
+  padding: 0.9rem;
+  background: #1e3a5f;
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 1rem;
+  letter-spacing: 0.02em;
+}
+
+.btn-submit:hover { background: #2a4f80; }
+
+.btn-clear {
+  padding: 0.45rem 0.9rem;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  /* Larger touch target on mobile */
+  min-height: 40px;
+}
+
+/* ── Alerts ── */
+.alert {
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.alert-error   { background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; }
+.alert-success { background: #dcfce7; border: 1px solid #86efac; color: #166534; }
+.alert-info    { background: #eff6ff; border: 1px solid #93c5fd; color: #1e40af; }
+
+/* ── Success Page ── */
+.success-box {
+  background: #fff;
+  border-radius: 10px;
+  padding: 2.5rem;
+  text-align: center;
+  border: 1px solid #ddd;
+}
+
+.success-box h2 { font-size: 1.5rem; margin-bottom: 0.75rem; color: #1e3a5f; }
+.success-box p  { margin-bottom: 0.5rem; }
+.success-box a  { color: #2563eb; }
